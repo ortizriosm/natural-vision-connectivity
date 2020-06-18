@@ -1,0 +1,72 @@
+#!/bin/tcsh
+
+
+
+	#This script runs all preprocessing steps for epi data for all subjects, sessions and runs
+	# Require orignal raw NIFTI files, edited brain mask files
+	# Se up path to the data
+	set npath = '~/Desktop/natural-connectivity-master/data/EPI'
+		cd ${npath}
+		foreach subj (DP VL AL FL)
+		 cd ${subj}
+		  foreach session (S1)
+		   cd ${session}
+	            foreach run (R1 R2 R3 R4 R5)
+		        # Check if the subject session run file exits otherwise exit loop 
+		        [ -f "${subj}.${session}.${run}.nii" ] && echo 1 || break
+
+			#Slice timing correction
+			3dTshift -tzero 0 -prefix ${subj}.${session}.${run}.TZ.nii  ${subj}.${session}.${run}.nii
+		         
+			#Count deviations of volumes plot them and store data in 1D file 
+		         3dToutcount -automask ${subj}.${session}.${run}.nii > ${subj}.${session}.${run}.outcount.1D
+			  1dplot ${subj}.${session}.${run}.outcount.1D &
+
+			#Calculate mean for -in-volume correction  
+		         3dTstat -prefix __temp.${subj}.${session}.${run}.TZ.U.nii ${subj}${session}.${run}.TZ.nii
+
+			#Volume correction  
+			3dvolreg -verbose -base ${subj}.${session}.${run}.TZ.U.nii -dfile ${subj}.${session}.${run}.TZ.mp.1D \ 
+			-prefix ${subj}.${session}.${run}.TZ.VR.nii  ${subj}.${session}.${run}.TZ.nii
+			
+			#Get mean of resiter data for getting brain
+			3dTstat -prefix ${subj}.${session}.${run}.TZ.VR.U.nii ${subj}.${session}.${run}.TZ.VR.nii
+
+			#Get mean of resiter data for getting brain
+			3dTstat -prefix ${subj}.${session}.${run}.TZ.VR.U.nii ${subj}.${session}.${run}.TZ.VR.nii
+
+			#Get brain mask
+			3dAutomask -prefix ${subj}.${session}.${run}.TZ.VR.U.M.nii ${subj}.${session}.${run}.TZ.VR.nii
+
+			#Do smoothing in volume for better visualization. Kernel twice the voxel size 
+			3dmerge -1blur_fwhm 2.4 -doall -prefix ${subj}.${session}.${run}.TZ.VR.SM.nii \ 
+			${subj}.${session}.${run}.TZ.VR.nii 
+			
+			#Scale time series by the overall mean (no-smooth data)
+			3dcalc -a ${subj}.${session}.${run}.TZ.VR.nii -b ${subj}.${session}.${run}.TZ.VR.U.nii \ 
+			-c ${subj}.${session}.${run}.TZ.VR.AL.U.M.nii -expr 'c*min(200, a/b*100)' \ 
+			-float -prefix ${subj}.${session}.${run}.TZ.VR.SN.nii
+
+			#Scale time series by the overall mean (smooth data)
+			3dcalc -a ${subj}.${session}.${run}.TZ.VR.SM.nii -b ${subj}.${session}.${run}.TZ.VR.U.nii \ 
+			-c ${subj}.${session}.${run}.TZ.VR.AL.U.M.nii -expr 'c*min(200, a/b*100)' \ 
+			-float -prefix ${subj}.${session}.${run}.TZ.VR.SM.SN.nii
+
+			rm __temp.*
+
+		      cd ../
+		   end
+		 cd ../
+	       end
+            cd ../
+
+#1d_tool.py -infile ${subj}${session}.${run}.Tshift.motion.1D -set_run_lengths 200 -set_tr 1.5 -derivative -overwrite -write ${subj}${session}.${run}.derr.1D
+	#1d_tool.py -infile ${subj}${session}.${run}.Tshift.NS.motion.1D'[1..6]' -set_nruns 1 -show_censor_count -overwrite -censor_motion 0.1 ${subj}${session}.${run}
+	#3dTsmooth -hamming 7 -prefix ${subj}${session}.${run}.Tshift.NS.VR.3FWHM_1.5.Norm.TS ${subj}${session}.${run}.Tshift.NS.VR.3FWHM_1.5.Norm+orig.
+	#3dDetrend -prefix ${subj}${session}.${run}.Tshift.NS.VR.3FWHM_1.5.Norm.DT -normalize -polort 3 ${subj}${session}.${run}.Tshift.NS.VR.3FWHM_1.5.Norm+orig.
+
+
+
+
+
+

@@ -1,0 +1,34 @@
+#!/bin/tcsh
+
+
+
+	#This script runs parcelation for all subjects, sessions and runs
+	# Require orignal raw NIFTI anat files, output will include segmentation whole brain and right side
+
+	# Se up path to the data
+	set npath = '~/Desktop/natural-connectivity-master/data/myelin'
+	set session = 'T1'
+	  cd ${npath}
+		foreach subj (VL)
+		 cd ${subj}
+	            foreach run (5)
+ 			# Check if the subject session run file exits otherwise exit loop 
+		        [ -f "${subj}.${session}.${run}.nii" ] && echo 1 || break
+			3dresample -master ../../T1/${subj}/S1/${subj}.S1.R1.anat.nii \
+			-prefix __tmp_${subj}.${session}.${run}.RS.nii -inset ${subj}.${session}.${run}.nii        
+			3dLRflip -AP -prefix __tmp_${subj}.${session}.${run}.RS.flip.nii __tmp_${subj}.${session}.${run}.RS.nii	
+			3dLRflip -LR -prefix __tmp_${subj}.${session}.${run}.RS.flip2.nii __tmp_${subj}.${session}.${run}.RS.flip.nii			
+			3dresample -master ../../D99_atlas/D99_2_112+orig. -prefix __tmp_${subj}.${session}.${run}.RS.flip2_RS.nii -inset __tmp_${subj}.${session}.${run}.RS.flip2.nii
+			@Align_Centers -base ../../D99_atlas/D99_2_112+orig.  -dset __tmp_${subj}.${session}.${run}.RS.flip2_RS.nii -cm
+			3dAllineate -prefix  ${subj}.${session}.${run}.AL.nii -base ../../D99_atlas/D99_2_112+orig. \
+			-source __tmp_${subj}.${session}.${run}.RS.flip2_RS_shft.nii -twopass -cost mi -master ../../D99_atlas/D99_2_112+orig. \
+			-1Dmatrix_save ${subj}.${session}.${run}.aff12.1D -autoweight -fineblur 3 -cmass
+	
+		   end
+		 rm __tmp_*
+		cd ../
+	       end
+	   cd ../
+
+
+	

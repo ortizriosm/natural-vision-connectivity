@@ -1,0 +1,29 @@
+#!/bin/tcsh
+
+
+
+	#This script runs parcelation for all subjects, sessions and runs
+	# Require orignal raw NIFTI anat files, output will include segmentation whole brain and right side
+
+	# Se up path to the data
+	set npath = '~/Desktop/natural-connectivity-master/data/parc'
+	set spath = '~/Desktop/natural-connectivity-master/scripts/prepro_scripts'
+	set atlaspath = '~/Desktop/natural-connectivity-master/data/D99_atlas'
+	  cd ${npath}
+		foreach subj (DP VL AL FL)
+		 cd ${subj}
+		  foreach session (S1)
+		   cd ${session}
+	            foreach run (R1)
+			3dcopy ${subj}.${session}.${run}.anat.nii ${subj}.${session}.${run}.anat
+		        tcsh -x ${spath}/macaque_align.csh ${subj}.${session}.${run}.anat+orig. ${atlaspath}/D99_template.nii.gz \
+			${atlaspath}/D99_atlas_1.2a.nii.gz ${atlaspath}/D99_atlas_1.2a_right.nii.gz
+		   end
+		cd ../
+	       end
+	   cd ../
+         end
+
+
+
+			

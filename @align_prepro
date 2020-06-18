@@ -1,0 +1,52 @@
+#!/bin/tcsh
+
+
+
+	#This script runs parcelation for all subjects, sessions and runs
+	# Require orignal raw NIFTI anat files, output will include segmentation whole brain and right side
+
+	# Se up path to the data
+	set npath = '~/Desktop/natural-connectivity-master/data/align_files'
+	  cd ${npath}
+		foreach subj (DP VL AL FL)
+		 cd ${subj}
+		  foreach session (S1)
+		   cd ${session}
+	            foreach run (R1)
+
+			# copy original anat file and D99_atlas on 112		
+			3dcopy ../../../parc/${subj}/${session}/${subj}.${session}.${run}.anat.nii \
+			./${subj}.${session}.${run}.anat.nii
+			3dcopy ../../../parc/${subj}/${session}/D99_in_${subj}.${session}.${run}.anat_native+orig \
+			./D99_in_${subj}.${session}.${run}.anat_native.nii
+			3dcopy ../../../D99_atlas/D99_2_112+orig. ./D99_2_112.nii
+			#get mask from D99_sugrogate and get brain from original				        
+			3dcalc -a D99_in_${subj}.${session}.${run}.anat_native.nii -expr 'step(a)' \
+			-prefix brainmask.nii
+		        3dcalc -a ${subj}.${session}.${run}.anat.nii -b brainmask.nii \
+			-expr 'a*b' -prefix ${subj}.${session}.${run}.anat.NS.nii
+		        3dcalc -a ${subj}.${session}.${run}.anat.NS.nii -b D99_in_${subj}.${session}.${run}.anat_native.nii \
+			-expr 'a*b' -prefix ${subj}.${session}.${run}.anat.NS.New.nii			
+
+			#Do alignment 				        
+			@Align_Centers -base D99_2_112.nii -dset ${subj}.${session}.${run}.anat.NS.New.nii -cm
+			3dAllineate -prefix  ${subj}.${session}.${run}.anat.NS.New.AL.nii -base D99_2_112.nii \
+			-source ${subj}.${session}.${run}.anat.NS.New_shft.nii -twopass -cost mi -mast_dxyz 0.6 \
+			-1Dmatrix_save ${subj}.${session}.${run}.anat.NS.New.aff12.1D -autoweight -fineblur 3 -cmass
+	
+		   end
+		cd ../
+	       end
+	   cd ../
+         end
+
+	#mri_convert -nt -cs 0.6 brain.nii brain.mgz
+	#mri_convert -nt -cs 0.6 brain.nii orig.mgz
+	#mri_convert -nt -cs 0.6 wm.nii wm.mgz
+	#mri_convert -nt -cs 0.6 filled.nii filled.mgz
+	#mri_convert -nt -cs 0.6 brainmask.nii brainmask.mgz
+	#mri_normalize -g 1 -mprage -mask brainmask.mgz brain.mgz brain.finalsurfs.mgz
+
+
+
+	

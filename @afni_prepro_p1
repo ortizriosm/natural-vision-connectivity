@@ -1,0 +1,58 @@
+#!/bin/tcsh
+
+
+
+	#This script runs all pre-processing steps for phase one of epi data for all subjects, sessions and runs
+	# Require orignal raw NIFTI files, output brain mask files are then edited for use in @afni_prepro_p2
+
+	# Se up path to the data
+	set npath = '~/Desktop/natural-connectivity-master/data/EPI'
+		cd ${npath}
+		foreach subj (DP VL AL FL)
+		 cd ${subj}
+		  foreach session (S1)
+		   cd ${session}
+	            foreach run (R1 R2 R3 R4 R5)
+		        # Check if the subject session run file exits otherwise exit loop 
+		        [ -f "${subj}.${session}.${run}.epi.nii" ] && echo 1 || break
+
+			#Slice timing correction
+			3dTshift -tzero 0 -prefix ${subj}.${session}.${run}.epi.TZ.nii  ${subj}.${session}.${run}.epi.nii
+		         
+			#Count deviations of volumes plot them and store data in 1D file 
+		         3dToutcount -automask ${subj}.${session}.${run}.epi.nii > ${subj}.${session}.${run}.epi.outcount.1D
+			  #1dplot ${subj}.${session}.${run}.epi.outcount.1D &
+
+			#Calculate mean for -in-volume correction  
+		         3dTstat -prefix __temp.${subj}.${session}.${run}.epi.TZ.U.nii ${subj}.${session}.${run}.epi.TZ.nii
+
+			#Volume correction  
+			3dvolreg -verbose -base __temp.${subj}.${session}.${run}.epi.TZ.U.nii -dfile ${subj}.${session}.${run}.epi.TZ.mp.1D \
+			-prefix ${subj}.${session}.${run}.epi.TZ.VR.nii  ${subj}.${session}.${run}.epi.TZ.nii
+			
+
+			#Do smoothing in volume for better visualization. Kernel twice the voxel size 
+			3dmerge -1blur_fwhm 2.4 -doall -prefix ${subj}.${session}.${run}.epi.TZ.VR.SM.nii \
+			${subj}.${session}.${run}.epi.TZ.VR.nii 
+			
+			#Get mean of resiter data for getting brain
+			3dTstat -prefix ${subj}.${session}.${run}.epi.TZ.VR.SM.U.nii ${subj}.${session}.${run}.epi.TZ.VR.SM.nii
+
+			rm __temp.*
+		   end
+		   # Get mean of all mean runs
+		   3dMean -prefix ${subj}.${session}.all.epi.TZ.VR.SM.U.nii ${subj}.${session}.*.epi.TZ.VR.SM.U.nii
+		   #Get brain mask. The output file was used to create a manullay edited brain mask
+		   3dAutomask -prefix ${subj}.${session}.all.epi.TZ.VR.SM.U.M.nii ${subj}.${session}.all.epi.TZ.VR.SM.U.nii
+		   
+	           # If you require to make this step by yourself do the following and edit the masks
+		   #mkdir mask
+		   3dcopy ${subj}.${session}.all.epi.TZ.VR.SM.U.M.nii ./mask/${subj}.${session}.all.epi.mask.nii
+		   3dcopy ${subj}.${session}.all.epi.TZ.VR.SM.U.nii ./mask/${subj}.${session}.all.epi.TZ.VR.SM.U.nii
+		cd ../
+	       end
+	   cd ../
+         end
+
+
+

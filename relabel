@@ -1,0 +1,61 @@
+#!/bin/bash
+
+ROIs_visual=(34 131 123 93 20 73 53 99 95 152 125 160 144 96 92 74 140 78 110 135 159 193 97 165 145 80 155 151 15 25 46 72 100 68 120 149 115 224 101 130 31 113 89 111 43 134 77 121 91 82 38 109 90 30 94 124 143 127 41 76 148 51 2 32 129 61 153 71 146 103 108 14 3 133 69 188 117 45 66 27 11 16 23 176 200 196 197 198 206 204 175 183)
+
+
+#34 131 123 93 20 73  
+
+#53 99 95 152 125 160 144 96 92 74 140 78 110 135 159 193 97 165 145
+
+#80 155 151 15 25 46 72 100 68 120 149 115 224 101
+
+#130 31 113 89 111 43 134 77 121 91 82 38 109 90 30
+
+#94 124 143 127 41 76 148 51 2 32 129 61 153 71 146 103 
+
+#108 14 3 133 69 188 117 45 66 27 11 16 23  
+
+#176 200 196 197 198 206 204 175 183
+
+
+# To separate the masks in different briks of the both hemispheres
+#for ((i=0;i<${#ROIs_visual[*]};i++)); do
+ #   temp_ROI=$(printf "%02d" ${ROIs_visual[$i]})   
+    #echo $temp_ROI
+ #   3dcalc -a velma.MX1.7_MDEFT_right_seg_RS+orig -expr "equals(a,$temp_ROI)*($i+1)" -prefix ./New_ROIS_right_hem/ROI_$temp_ROI.nii 
+#done
+
+
+#  Insula 136 35 87
+# To separate the masks in different briks of the right hemisphere
+3dcalc -a right_ROIs/RH_ROIs.nii -expr 'amongst(a,)' -prefix right_ROIs/ROI_$temp_ROI.nii
+
+for ((i=0;i<${#ROIs_visual[*]};i++)); do
+    temp_ROI=$(printf "%02d" ${ROIs_visual[$i]})   
+    echo $temp_ROI
+   3dcalc -a right_ROIs/RH_ROIs.nii -expr "equals(a,$temp_ROI)*($i+1)" -prefix right_ROIs/ROI_$temp_ROI.RH.nii
+done
+ 
+3dcalc -a left_ROIs/LH_ROIs.nii -expr 'amongst(a,)' -prefix left_ROIs/ROI_$temp_ROI.nii
+# To separate the masks in different briks of the left hemisphere
+for ((i=0;i<${#ROIs_visual[*]};i++)); do
+   temp_ROI=$(printf "%02d" ${ROIs_visual[$i]})   
+    echo $temp_ROI
+   3dcalc -a left_ROIs/LH_ROIs.nii -expr "equals(a,$temp_ROI)*($i+119)" -prefix left_ROIs/ROI_$temp_ROI.LH.nii 
+done
+
+
+#34 131 123 93 20 73  
+
+#53 99 95 152 125 160 144 96 92 74 140 78 110 135 159 193 97 165 145
+
+#80 155 151 15 25 46 72 100 68 120 149 115 224 101
+
+#130 31 113 89 111 43 134 77 121 91 82 38 109 90 30
+
+#94 124 143 127 41 76 148 51 2 32 129 61 153 71 146 103 
+
+#108 14 3 133 69 188 117 45 66 27 11 16 23  
+
+#176 200 196 197 198 206 204 175 183
+

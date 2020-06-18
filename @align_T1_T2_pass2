@@ -1,0 +1,50 @@
+#!/bin/tcsh
+
+
+
+	#This script runs parcelation for all subjects, sessions and runs
+	# Require orignal raw NIFTI anat files, output will include segmentation whole brain and right side
+
+	# Se up path to the data
+	set npath = '~/Desktop/natural-connectivity-master/data/myelin'
+	set session = 'T1'
+	  cd ${npath}
+		foreach subj (DP)
+		 cd ${subj}
+	            foreach run ( 1 3 4 5 6 7 )
+ 			# Check if the subject session run file exits otherwise exit loop 
+		        [ -f "${subj}.${session}.${run}.nii" ] && echo 1 || break
+			#3dMean -prefix ${subj}.${session}.Mean.nii ${subj}.${session}.*.AL.nii
+			#3dAllineate -prefix  ${subj}.${session}.${run}.AL4.nii -base ${subj}.${session}.Mean4.nii \
+			#source ${subj}.${session}.${run}.AL3.nii -twopass -cost mi -master ${subj}.${session}.Mean4.nii \
+			#-1Dmatrix_save ${subj}.${session}.${run}.AL4.aff12.1D -autoweight -source_automask -fineblur 3 -cmass
+	  		3dQwarp -source ${subj}.${session}.${run}.AL2.nii -base ${subj}.${session}.2.AL2.nii  \
+			-prefix ${subj}.${session}.${run}.AL2.QW.nii -mi -verb -blur 0 1
+		   end
+		3dMean -prefix ${subj}.${session}.Mean.QW.nii ${subj}.${session}.*.AL2.QW.nii ${subj}.${session}.2.AL2.nii
+		 rm __tmp_*
+		cd ../
+	       end
+	   cd ../
+
+	set session = 'T2'
+	  cd ${npath}
+		foreach subj (DP)
+		 cd ${subj}
+	            foreach run ( 1 3 4 5 6 7 )
+ 			# Check if the subject session run file exits otherwise exit loop 
+		        [ -f "${subj}.${session}.${run}.nii" ] && echo 1 || break
+			#3dMean -prefix ${subj}.${session}.Mean.nii ${subj}.${session}.*.AL.nii
+			#3dAllineate -prefix  ${subj}.${session}.${run}.AL4.nii -base ${subj}.${session}.Mean4.nii \
+			#source ${subj}.${session}.${run}.AL3.nii -twopass -cost mi -master ${subj}.${session}.Mean4.nii \
+			#-1Dmatrix_save ${subj}.${session}.${run}.AL4.aff12.1D -autoweight -source_automask -fineblur 3 -cmass
+	  		3dQwarp -source ${subj}.${session}.${run}.AL2.nii -base ${subj}.${session}.2.AL2.nii  \
+			-prefix ${subj}.${session}.${run}.AL2.QW.nii -mi -verb -blur 0 1
+		   end
+		3dMean -prefix ${subj}.${session}.Mean.QW.nii ${subj}.${session}.*.AL2.QW.nii ${subj}.${session}.2.AL2.nii
+		 rm __tmp_*
+		cd ../
+	       end
+	   cd ../
+
+	
