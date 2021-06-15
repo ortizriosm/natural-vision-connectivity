@@ -2,57 +2,118 @@
 
 
 
-	#This script runs all pre-processing steps for phase one of epi data for all subjects, sessions and runs
-	# Require orignal raw NIFTI files, output brain mask files are then edited for use in @afni_prepro_p2
+#This script runs pre-processing of EPI data for all subjects, sessions and runs
+# Require orignal raw NIFTI files, mask files were previously edited and are available for donwload
 
-	# Se up path to the data
-	set npath = '~/Desktop/natural-connectivity-master/data/EPI'
-		cd ${npath}
-		foreach subj (DP VL AL FL)
-		 cd ${subj}
-		  foreach session (S1)
-		   cd ${session}
-	            foreach run (R1 R2 R3 R4 R5)
-		        # Check if the subject session run file exits otherwise exit loop 
-		        [ -f "${subj}.${session}.${run}.epi.nii" ] && echo 1 || break
+# Set up the directory for the data
+set npath = '/Volumes/Seagate_Expansion/natural-connectivity-master/data/EPI2'
+	cd ${npath}
+		foreach subj (VL)
+			cd ${subj}
+  				foreach session (S1)
+					cd ${session}
+					mkdir output
+					cd output
+					#******************************Pre-processing part 1********************************************
+				    		foreach run (R1 R2 R3 R4 R5)
+						        # Check if the subject session run file exits otherwise exit loop 
+						        [ -f "../${subj}.${session}.${run}.epi.nii" ] && echo 1 || break
 
-			#Slice timing correction
-			3dTshift -tzero 0 -prefix ${subj}.${session}.${run}.epi.TZ.nii  ${subj}.${session}.${run}.epi.nii
-		         
-			#Count deviations of volumes plot them and store data in 1D file 
-		         3dToutcount -automask ${subj}.${session}.${run}.epi.nii > ${subj}.${session}.${run}.epi.outcount.1D
-			  #1dplot ${subj}.${session}.${run}.epi.outcount.1D &
+								#Slice timing correction
+								3dTshift -tzero 0 -prefix ${subj}.${session}.${run}.epi.TZ.nii  ../${subj}.${session}.${run}.epi.nii			
 
-			#Calculate mean for -in-volume correction  
-		         3dTstat -prefix __temp.${subj}.${session}.${run}.epi.TZ.U.nii ${subj}.${session}.${run}.epi.TZ.nii
+								#Despike data
+								3dDespike -NEW25 -localedit -prefix ${subj}.${session}.${run}.epi.TZ.DS.nii \
+								${subj}.${session}.${run}.epi.TZ.nii
+							         
+								#Count deviations of volumes plot them and store data in 1D file 
+							    3dToutcount -automask ${subj}.${session}.${run}.epi.nii > ${subj}.${session}.${run}.epi.outcount.1D
+								#1dplot ${subj}.${session}.${run}.epi.outcount.1D &
 
-			#Volume correction  
-			3dvolreg -verbose -base __temp.${subj}.${session}.${run}.epi.TZ.U.nii -dfile ${subj}.${session}.${run}.epi.TZ.mp.1D \
-			-prefix ${subj}.${session}.${run}.epi.TZ.VR.nii  ${subj}.${session}.${run}.epi.TZ.nii
+								#Calculate mean for -in-volume correction  
+							    3dTstat -prefix __temp.${subj}.${session}.${run}.epi.TZ.DS.U.nii ${subj}.${session}.${run}.epi.TZ.DS.nii
+
+								#Motion correction  
+								3dvolreg -verbose -base __temp.${subj}.${session}.${run}.epi.TZ.DS.U.nii \
+								-dfile ${subj}.${session}.${run}.epi.TZ.DS.mp.1D \
+								-prefix ${subj}.${session}.${run}.epi.TZ.DS.VR.nii  ${subj}.${session}.${run}.epi.TZ.DS.nii
+								
+								#Get brain only by masking data. This steps requires that avaiable masks.
+								3dcalc -a  ${subj}.${session}.${run}.epi.TZ.DS.VR.nii -b ../mask/${subj}.${session}.all.epi.mask.nii \
+								-expr 'a*b' -prefix ${subj}.${session}.${run}.epi.TZ.DS.VR.NS.nii
+
+							end
+							rm __temp*
+					     	# If you require to make this step by yourself do the following and edit the masks
+					        #3dMean -prefix ${subj}.${session}.all.epi.TZ.VR.SM.U.nii ${subj}.${session}.*.epi.TZ.VR.SM.U.nii
+						   	#Get brain mask. The output file was used to create a manullay edited brain mask
+						   	#3dAutomask -prefix ${subj}.${session}.all.epi.TZ.VR.SM.U.M.nii ${subj}.${session}.all.epi.TZ.VR.SM.U.nii
+						   	#mkdir mask
+						   	#3dcopy ${subj}.${session}.all.epi.TZ.VR.SM.U.M.nii ./mask/${subj}.${session}.all.epi.mask.nii
+						   	#3dcopy ${subj}.${session}.all.epi.TZ.VR.SM.U.nii ./mask/${subj}.${session}.all.epi.TZ.VR.SM.U.nii
+					   	cd ../mask
+					   	mkdir output
+					   	cd output
+					   		#Prepare mean dataset for aligment
+					   		3dZeropad -S 10 -I 10 -prefix ${subj}.${session}.all.epi.TZ.VR.SM.U.ZP.nii \
+					   		../${subj}.${session}.all.epi.TZ.VR.SM.U.nii
+
+					   		#Find the space
+					   		@Align_Centers -base ../../../../../ANAT2/${subj}/${session}/${subj}.${session}.R1.anat.NS.New.AL.nii \
+					   		-dset ${subj}.${session}.all.epi.TZ.VR.SM.U.ZP.nii -cm
+
+					   		#Make aligment 
+					   		3dAllineate -prefix ${subj}.${session}.all.epi.TZ.VR.SM.U.ZP_shft.AL.nii \
+					   		-base ../../../../../ANAT2/${subj}/${session}/${subj}.${session}.R1.anat.NS.New.AL.nii \
+					   		-source ${subj}.${session}.all.epi.TZ.VR.SM.U.ZP_shft.nii -twopass -cost mi -master SOURCE \
+					   		-1Dmatrix_save ${subj}.${session}.all.epi.TZ.VR.SM.U.ZP_shft.AL.aff12.1D -autoweight -fineblur 3 -cmass
+				   		
+							3dcalc -a ../${subj}.${session}.all.epi.TZ.VR.SM.U.nii -b ../${subj}.${session}.all.epi.mask.nii \
+							-expr 'a*b' -prefix ${subj}.${session}.all.epi.TZ.VR.SM.U.NS.nii
 			
+							3dZeropad -S 10 -I 10 -prefix ${subj}.${session}.all.epi.TZ.VR.SM.U.NS.ZP.nii ${subj}.${session}.all.epi.TZ.VR.SM.U.NS.nii
+							
+							@Align_Centers -base ${subj}.${session}.all.epi.TZ.VR.SM.U.ZP_shft.AL.nii \
+							-dset ${subj}.${session}.all.epi.TZ.VR.SM.U.NS.ZP.nii -cm
+							
+							3dAllineate -prefix ${subj}.${session}.all.epi.TZ.VR.SM.U.NS.ZP_shft.AL.nii \
+							-base ${subj}.${session}.all.epi.TZ.VR.SM.U.ZP_shft.AL.nii \
+							-source ${subj}.${session}.all.epi.TZ.VR.SM.U.NS.ZP_shft.nii  -twopass -cost mi -master SOURCE \
+							-1Dmatrix_save ${subj}.${session}.all.epi.TZ.VR.SM.U.NS.ZP_shft.AL.aff12.1D -autoweight -fineblur 3 -cmass
 
-			#Do smoothing in volume for better visualization. Kernel twice the voxel size 
-			3dmerge -1blur_fwhm 2.4 -doall -prefix ${subj}.${session}.${run}.epi.TZ.VR.SM.nii \
-			${subj}.${session}.${run}.epi.TZ.VR.nii 
-			
-			#Get mean of resiter data for getting brain
-			3dTstat -prefix ${subj}.${session}.${run}.epi.TZ.VR.SM.U.nii ${subj}.${session}.${run}.epi.TZ.VR.SM.nii
 
-			rm __temp.*
-		   end
-		   # Get mean of all mean runs
-		   3dMean -prefix ${subj}.${session}.all.epi.TZ.VR.SM.U.nii ${subj}.${session}.*.epi.TZ.VR.SM.U.nii
-		   #Get brain mask. The output file was used to create a manullay edited brain mask
-		   3dAutomask -prefix ${subj}.${session}.all.epi.TZ.VR.SM.U.M.nii ${subj}.${session}.all.epi.TZ.VR.SM.U.nii
-		   
-	           # If you require to make this step by yourself do the following and edit the masks
-		   #mkdir mask
-		   3dcopy ${subj}.${session}.all.epi.TZ.VR.SM.U.M.nii ./mask/${subj}.${session}.all.epi.mask.nii
-		   3dcopy ${subj}.${session}.all.epi.TZ.VR.SM.U.nii ./mask/${subj}.${session}.all.epi.TZ.VR.SM.U.nii
-		cd ../
-	       end
-	   cd ../
-         end
+				   		cd ../../
+				   		cd output
+				   		#******************************Aligment********************************************
+				   		foreach run (R1 R2 R3 R4 R5)
+						        # Check if the subject session run file exits otherwise exit loop 
+						        [ -f "../${subj}.${session}.${run}.epi.nii" ] && echo 1 || break				   		
+				   				#Prepare for aligment non-smooth data
+
+				   				3dZeropad -S 10 -I 10 -prefix ${subj}.${session}.${run}.epi.TZ.DS.VR.NS.ZP.nii \
+				   				${subj}.${session}.${run}.epi.TZ.DS.VR.NS.nii
+
+								@Align_Centers -base ../mask/output/${subj}.${session}.all.epi.TZ.VR.SM.U.NS.ZP_shft.AL.nii \
+								-dset ${subj}.${session}.${run}.epi.TZ.DS.VR.NS.ZP.nii -cm
+
+								#Make aligment non-smooth
+								3dAllineate -base ../mask/output/${subj}.${session}.all.epi.TZ.VR.SM.U.NS.ZP_shft.AL.nii \
+								-1Dmatrix_apply ../mask/output/${subj}.${session}.all.epi.TZ.VR.SM.U.NS.ZP_shft.AL.aff12.1D \
+								-prefix ${subj}.${session}.${run}.epi.TZ.DS.VR.NS.ZP_shft.AL.nii \
+								-input ${subj}.${session}.${run}.epi.TZ.DS.VR.NS.ZP_shft.nii \
+								-master SOURCE -float -cmass -1Dparam_save _vr.1D -onepass
+
+								#Get mean of resiter data for getting brain
+								3dTstat -prefix ${subj}.${session}.${run}.epi.TZ.DS.VR.NS.ZP_shft.AL.U.nii \
+								${subj}.${session}.${run}.epi.TZ.DS.VR.NS.ZP_shft.AL.nii
+
+							end
+
+					cd ../../
+	       		end
+	   		cd ../
+   		end
+   	cd ../
 
 
 

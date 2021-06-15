@@ -1,0 +1,74 @@
+#!/bin/tcsh
+
+
+
+#This script runs pre-processing of EPI data for all subjects, sessions and runs
+# Require orignal raw NIFTI files, mask files were previously edited and are available for donwload
+
+# Set up the directory for the data
+set npath = '/Volumes/Seagate_Expansion/natural-connectivity-master/data/EPI2/InterSCorr'
+
+								cd ${npath}
+								#3dMean -prefix AL.S1.All.epi.TZ.DS.VR.NS.ZP_shft.AL.nii \
+								#AL.S1.R1.epi.TZ.DS.VR.NS.ZP_shft.AL.nii \
+								#AL.S1.R2.epi.TZ.DS.VR.NS.ZP_shft.AL.nii
+
+								#3dMean -prefix DP.S1.All.epi.TZ.DS.VR.NS.ZP_shft.AL.nii \
+								#DP.S1.R1.epi.TZ.DS.VR.NS.ZP_shft.AL.nii \
+								#DP.S1.R2.epi.TZ.DS.VR.NS.ZP_shft.AL.nii \
+								#DP.S1.R3.epi.TZ.DS.VR.NS.ZP_shft.AL.nii
+
+								#3dTcorrelate -pearson -Fisher -polort -1 -automask \
+								#-prefix AL.All.vs.DP.All.epi.AL.nii \
+								#AL.S1.All.epi.TZ.DS.VR.NS.ZP_shft.AL.nii \
+								#DP.S1.All.epi.TZ.DS.VR.NS.ZP_shft.AL.nii
+
+								#3dTcorrelate -spearman -Fisher -polort 3  \
+								#-prefix DP.R1.vs.DP.R2.epi.AL.nii \
+								#DP.S1.R1.epi.TZ.DS.VR.NS.ZP_shft.AL.nii  \
+								#DP.S1.R2.epi.TZ.DS.VR.NS.ZP_shft.AL.nii 
+
+								#3dTcorrelate -spearman -Fisher -polort 3  \
+								#-prefix DP.R1.vs.DP.R3.epi.AL.nii \
+								#DP.S1.R1.epi.TZ.DS.VR.NS.ZP_shft.AL.nii  \
+								#DP.S1.R3.epi.TZ.DS.VR.NS.ZP_shft.AL.nii 
+
+								#3dTcorrelate -spearman -Fisher -polort 3  \
+								#-prefix DP.R2.vs.DP.R3.epi.AL.nii \
+								#DP.S1.R2.epi.TZ.DS.VR.NS.ZP_shft.AL.nii  \
+								#DP.S1.R3.epi.TZ.DS.VR.NS.ZP_shft.AL.nii 
+
+								#3dMean -prefix DP.All.Corr.epi.AL.nii \
+								#DP.R2.vs.DP.R3.epi.AL.nii \
+								#DP.R1.vs.DP.R3.epi.AL.nii \
+								#DP.R1.vs.DP.R2.epi.AL.nii
+
+								#3dTcorrelate -spearman -Fisher -polort 3  \
+								#-prefix AL.vs.DP.all.epi.AL.nii \
+								#AL.S1.All.epi.TZ.DS.VR.NS.ZP_shft.AL.nii  \
+								#DP.S1.All.epi.TZ.DS.VR.NS.ZP_shft.AL.nii 
+
+								3dTcorrelate -spearman -Fisher -polort 3  \
+								-prefix AL.R1.vs.AL.R2.epi.AL.nii \
+								AL.S1.R1.epi.TZ.DS.VR.NS.ZP_shft.AL.nii  \
+								AL.S1.R2.epi.TZ.DS.VR.NS.ZP_shft.AL.nii 
+
+
+
+
+
+
+
+
+	
+
+
+
+
+
+
+
+
+
+
+

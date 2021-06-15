@@ -1,243 +1,246 @@
 #!/bin/tcsh
 # Instructions just dump the ROIs files NAME_seg and NAME_right_seg into a directory called atlas_relabel the execute ./@atlas_relabel. Of course change name of subject,session and run
 
-set subj = 'Daphne.'
-set session = 'Ip1'
-set run = '6'
+#set subj = 'Daphne.'
+#set session = 'Ip1'
+#set run = '6'
 
 
 
-AL.S1.R1.anat_right_seg+orig.
+#AL.S1.R1.anat_right_seg+orig.
 
 # Se up path to the data
-	set npath = '~/Desktop/natural-connectivity-master/data/atlas_relabel'
+	set npath = '/Volumes/Seagate_Expansion/natural-connectivity-master/data/ANAT2'
 	  cd ${npath}
-		foreach subj (DP VL)
+		foreach subj (AL DP FL VL)
 		 cd ${subj}
-		  foreach session (S1 S2)
+		  foreach session (S1)
 		   cd ${session}
-	            foreach run (R1)
+	        foreach run (R1)
+	        mkdir atlasfiles
+	        cd atlasfiles
 
-			cp ../../../../scripts/prepro_scripts/relabel ./ 
-			3dcopy ../../../parc/${subj}/${session}/${subj}.${session}.${run}.anat_seg+orig. \
-			./${subj}.${session}.${run}.anat_seg
-
+			cp ../../../../../scripts/prepro_scripts/relabel ./ 
+			#3dcopy ../../../parc/${subj}/${session}/${subj}.${session}.${run}.anat_seg+orig. \
+			#./${subj}.${session}.${run}.anat_seg
+			3dcopy ../${subj}.${session}.${run}.anat.NS.New.AL_seg.nii ${subj}.${session}.${run}.anat_seg
+			3dcopy ../${subj}.${session}.${run}.anat.NS.New.AL_right_seg.nii ${subj}.${session}.${run}.anat_right_seg
 			rm _temp*
 
 			#--------------------------------collapse some ROIs prefrontal area 24-------------------
-			3dcalc -a ${subj}${session}.${run}_anat_seg+orig. -expr 'amongst(a,11,186,185,49,187,98)' -prefix   _temp_ROI_mask
-			3dcalc -a  _temp_ROI_mask+orig. -b ${subj}${session}.${run}_anat_seg+orig. -expr 'a*b' -prefix   _temp_ROI_mask_value
-			3dcalc -a  ${subj}${session}.${run}_anat_seg+orig. -b _temp_ROI_mask_value+orig. -expr 'a-b' -prefix   _temp_ROI_atlas
+			3dcalc -a ${subj}.${session}.${run}.anat_seg+orig. -expr 'amongst(a,11,186,185,49,187,98)' -prefix   _temp_ROI_mask
+			3dcalc -a  _temp_ROI_mask+orig. -b ${subj}.${session}.${run}.anat_seg+orig. -expr 'a*b' -prefix   _temp_ROI_mask_value
+			3dcalc -a  ${subj}.${session}.${run}.anat_seg+orig. -b _temp_ROI_mask_value+orig. -expr 'a-b' -prefix   _temp_ROI_atlas
 			3dcalc -a _temp_ROI_mask+orig. -expr 'a*11' -prefix   _temp_ROI_mask_collapse_value
-			3dcalc -a  _temp_ROI_atlas+orig. -b _temp_ROI_mask_collapse_value+orig. -expr 'a+b' -prefix   ${subj}${session}.${run}_anat_seg_ed1
+			3dcalc -a  _temp_ROI_atlas+orig. -b _temp_ROI_mask_collapse_value+orig. -expr 'a+b' -prefix   ${subj}.${session}.${run}.anat_seg_ed1
 
 			rm _temp*
 
 			#--------------------------------collapse some V2-------------------
-			3dcalc -a ${subj}${session}.${run}_anat_seg+orig. -expr 'amongst(a,131,172,174)' -prefix   _temp_ROI_mask
-			3dcalc -a  _temp_ROI_mask+orig. -b ${subj}${session}.${run}_anat_seg+orig. -expr 'a*b' -prefix   _temp_ROI_mask_value
-			3dcalc -a  ${subj}${session}.${run}_anat_seg_ed1+orig. -b _temp_ROI_mask_value+orig. -expr 'a-b' -prefix   _temp_ROI_atlas
+			3dcalc -a ${subj}.${session}.${run}.anat_seg+orig. -expr 'amongst(a,131,172,174)' -prefix   _temp_ROI_mask
+			3dcalc -a  _temp_ROI_mask+orig. -b ${subj}.${session}.${run}.anat_seg+orig. -expr 'a*b' -prefix   _temp_ROI_mask_value
+			3dcalc -a  ${subj}.${session}.${run}.anat_seg_ed1+orig. -b _temp_ROI_mask_value+orig. -expr 'a-b' -prefix   _temp_ROI_atlas
 			3dcalc -a _temp_ROI_mask+orig. -expr 'a*131' -prefix   _temp_ROI_mask_collapse_value
-			3dcalc -a _temp_ROI_atlas+orig. -b _temp_ROI_mask_collapse_value+orig. -expr 'a+b' -prefix   ${subj}${session}.${run}_anat_seg_ed2
+			3dcalc -a _temp_ROI_atlas+orig. -b _temp_ROI_mask_collapse_value+orig. -expr 'a+b' -prefix   ${subj}.${session}.${run}.anat_seg_ed2
 
 			rm _temp*
 
 			#--------------------------------collapse some V3-------------------
-			3dcalc -a ${subj}${session}.${run}_anat_seg+orig. -expr 'amongst(a,123,60)' -prefix   _temp_ROI_mask
-			3dcalc -a  _temp_ROI_mask+orig. -b ${subj}${session}.${run}_anat_seg+orig. -expr 'a*b' -prefix   _temp_ROI_mask_value
-			3dcalc -a  ${subj}${session}.${run}_anat_seg_ed2+orig. -b _temp_ROI_mask_value+orig. -expr 'a-b' -prefix   _temp_ROI_atlas
+			3dcalc -a ${subj}.${session}.${run}.anat_seg+orig. -expr 'amongst(a,123,60)' -prefix   _temp_ROI_mask
+			3dcalc -a  _temp_ROI_mask+orig. -b ${subj}.${session}.${run}.anat_seg+orig. -expr 'a*b' -prefix   _temp_ROI_mask_value
+			3dcalc -a  ${subj}.${session}.${run}.anat_seg_ed2+orig. -b _temp_ROI_mask_value+orig. -expr 'a-b' -prefix   _temp_ROI_atlas
 			3dcalc -a _temp_ROI_mask+orig. -expr 'a*123' -prefix   _temp_ROI_mask_collapse_value
-			3dcalc -a  _temp_ROI_atlas+orig. -b _temp_ROI_mask_collapse_value+orig. -expr 'a+b' -prefix   ${subj}${session}.${run}_anat_seg_ed3
+			3dcalc -a  _temp_ROI_atlas+orig. -b _temp_ROI_mask_collapse_value+orig. -expr 'a+b' -prefix   ${subj}.${session}.${run}.anat_seg_ed3
 
 			rm _temp*
 
 			#--------------------------------collapse some V4-------------------
-			3dcalc -a ${subj}${session}.${run}_anat_seg+orig. -expr 'amongst(a,20,39)' -prefix   _temp_ROI_mask
-			3dcalc -a  _temp_ROI_mask+orig. -b ${subj}${session}.${run}_anat_seg+orig. -expr 'a*b' -prefix   _temp_ROI_mask_value
-			3dcalc -a  ${subj}${session}.${run}_anat_seg_ed3+orig. -b _temp_ROI_mask_value+orig. -expr 'a-b' -prefix   _temp_ROI_atlas
+			3dcalc -a ${subj}.${session}.${run}.anat_seg+orig. -expr 'amongst(a,20,39)' -prefix   _temp_ROI_mask
+			3dcalc -a  _temp_ROI_mask+orig. -b ${subj}.${session}.${run}.anat_seg+orig. -expr 'a*b' -prefix   _temp_ROI_mask_value
+			3dcalc -a  ${subj}.${session}.${run}.anat_seg_ed3+orig. -b _temp_ROI_mask_value+orig. -expr 'a-b' -prefix   _temp_ROI_atlas
 			3dcalc -a _temp_ROI_mask+orig. -expr 'a*20' -prefix   _temp_ROI_mask_collapse_value
-			3dcalc -a  _temp_ROI_atlas+orig. -b _temp_ROI_mask_collapse_value+orig. -expr 'a+b' -prefix   ${subj}${session}.${run}_anat_seg_ed4
+			3dcalc -a  _temp_ROI_atlas+orig. -b _temp_ROI_mask_collapse_value+orig. -expr 'a+b' -prefix   ${subj}.${session}.${run}.anat_seg_ed4
 
 			rm _temp*
 
 			#--------------------------------collapse some V6-------------------
-			3dcalc -a ${subj}${session}.${run}_anat_seg+orig. -expr 'amongst(a,73,141,56)' -prefix   _temp_ROI_mask
-			3dcalc -a  _temp_ROI_mask+orig. -b ${subj}${session}.${run}_anat_seg+orig. -expr 'a*b' -prefix   _temp_ROI_mask_value
-			3dcalc -a  ${subj}${session}.${run}_anat_seg_ed4+orig. -b _temp_ROI_mask_value+orig. -expr 'a-b' -prefix   _temp_ROI_atlas
+			3dcalc -a ${subj}.${session}.${run}.anat_seg+orig. -expr 'amongst(a,73,141,56)' -prefix   _temp_ROI_mask
+			3dcalc -a  _temp_ROI_mask+orig. -b ${subj}.${session}.${run}.anat_seg+orig. -expr 'a*b' -prefix   _temp_ROI_mask_value
+			3dcalc -a  ${subj}.${session}.${run}.anat_seg_ed4+orig. -b _temp_ROI_mask_value+orig. -expr 'a-b' -prefix   _temp_ROI_atlas
 			3dcalc -a _temp_ROI_mask+orig. -expr 'a*73' -prefix   _temp_ROI_mask_collapse_value
-			3dcalc -a  _temp_ROI_atlas+orig. -b _temp_ROI_mask_collapse_value+orig. -expr 'a+b' -prefix   ${subj}${session}.${run}_anat_seg_ed5
+			3dcalc -a  _temp_ROI_atlas+orig. -b _temp_ROI_mask_collapse_value+orig. -expr 'a+b' -prefix   ${subj}.${session}.${run}.anat_seg_ed5
 
 			rm _temp*
 
 			#--------------------------------collapse prefrontal area23-------------------
-			3dcalc -a ${subj}${session}.${run}_anat_seg+orig. -expr 'amongst(a,27,64,85)' -prefix   _temp_ROI_mask
-			3dcalc -a  _temp_ROI_mask+orig. -b ${subj}${session}.${run}_anat_seg+orig. -expr 'a*b' -prefix   _temp_ROI_mask_value
-			3dcalc -a  ${subj}${session}.${run}_anat_seg_ed5+orig. -b _temp_ROI_mask_value+orig. -expr 'a-b' -prefix   _temp_ROI_atlas
+			3dcalc -a ${subj}.${session}.${run}.anat_seg+orig. -expr 'amongst(a,27,64,85)' -prefix   _temp_ROI_mask
+			3dcalc -a  _temp_ROI_mask+orig. -b ${subj}.${session}.${run}.anat_seg+orig. -expr 'a*b' -prefix   _temp_ROI_mask_value
+			3dcalc -a  ${subj}.${session}.${run}.anat_seg_ed5+orig. -b _temp_ROI_mask_value+orig. -expr 'a-b' -prefix   _temp_ROI_atlas
 			3dcalc -a _temp_ROI_mask+orig. -expr 'a*27' -prefix   _temp_ROI_mask_collapse_value
-			3dcalc -a  _temp_ROI_atlas+orig. -b _temp_ROI_mask_collapse_value+orig. -expr 'a+b' -prefix   ${subj}${session}.${run}_anat_seg_ed6
+			3dcalc -a  _temp_ROI_atlas+orig. -b _temp_ROI_mask_collapse_value+orig. -expr 'a+b' -prefix   ${subj}.${session}.${run}.anat_seg_ed6
 
 			rm _temp*
 
 			#--------------------------------collapse prefrontal area13-------------------
-			3dcalc -a ${subj}${session}.${run}_anat_seg+orig. -expr 'amongst(a,69,8,18,65)' -prefix   _temp_ROI_mask
-			3dcalc -a  _temp_ROI_mask+orig. -b ${subj}${session}.${run}_anat_seg+orig. -expr 'a*b' -prefix   _temp_ROI_mask_value
-			3dcalc -a  ${subj}${session}.${run}_anat_seg_ed6+orig. -b _temp_ROI_mask_value+orig. -expr 'a-b' -prefix  _temp_ROI_atlas
+			3dcalc -a ${subj}.${session}.${run}.anat_seg+orig. -expr 'amongst(a,69,8,18,65)' -prefix   _temp_ROI_mask
+			3dcalc -a  _temp_ROI_mask+orig. -b ${subj}.${session}.${run}.anat_seg+orig. -expr 'a*b' -prefix   _temp_ROI_mask_value
+			3dcalc -a  ${subj}.${session}.${run}.anat_seg_ed6+orig. -b _temp_ROI_mask_value+orig. -expr 'a-b' -prefix  _temp_ROI_atlas
 			3dcalc -a _temp_ROI_mask+orig. -expr 'a*69' -prefix   _temp_ROI_mask_collapse_value
-			3dcalc -a  _temp_ROI_atlas+orig. -b _temp_ROI_mask_collapse_value+orig. -expr 'a+b' -prefix   ${subj}${session}.${run}_anat_seg_ed7
+			3dcalc -a  _temp_ROI_atlas+orig. -b _temp_ROI_mask_collapse_value+orig. -expr 'a+b' -prefix   ${subj}.${session}.${run}.anat_seg_ed7
 
 			rm _temp*
 
 			#--------------------------------collapse prefrontal area12-------------------
-			3dcalc -a ${subj}${session}.${run}_anat_seg+orig. -expr 'amongst(a,133,55,150,107)' -prefix   _temp_ROI_mask
-			3dcalc -a  _temp_ROI_mask+orig. -b ${subj}${session}.${run}_anat_seg+orig. -expr 'a*b' -prefix   _temp_ROI_mask_value
-			3dcalc -a  ${subj}${session}.${run}_anat_seg_ed7+orig. -b _temp_ROI_mask_value+orig. -expr 'a-b' -prefix   _temp_ROI_atlas
+			3dcalc -a ${subj}.${session}.${run}.anat_seg+orig. -expr 'amongst(a,133,55,150,107)' -prefix   _temp_ROI_mask
+			3dcalc -a  _temp_ROI_mask+orig. -b ${subj}.${session}.${run}.anat_seg+orig. -expr 'a*b' -prefix   _temp_ROI_mask_value
+			3dcalc -a  ${subj}.${session}.${run}.anat_seg_ed7+orig. -b _temp_ROI_mask_value+orig. -expr 'a-b' -prefix   _temp_ROI_atlas
 			3dcalc -a _temp_ROI_mask+orig. -expr 'a*133' -prefix   _temp_ROI_mask_collapse_value
-			3dcalc -a  _temp_ROI_atlas+orig. -b _temp_ROI_mask_collapse_value+orig. -expr 'a+b' -prefix   ${subj}${session}.${run}_anat_seg_ed8
+			3dcalc -a  _temp_ROI_atlas+orig. -b _temp_ROI_mask_collapse_value+orig. -expr 'a+b' -prefix   ${subj}.${session}.${run}.anat_seg_ed8
 
 			rm _temp*
 
 			#--------------------------------collapse prefrontal area11-------------------
-			3dcalc -a ${subj}${session}.${run}_anat_seg+orig. -expr 'amongst(a,3,114)' -prefix   _temp_ROI_mask
-			3dcalc -a  _temp_ROI_mask+orig. -b ${subj}${session}.${run}_anat_seg+orig. -expr 'a*b' -prefix   _temp_ROI_mask_value
-			3dcalc -a  ${subj}${session}.${run}_anat_seg_ed8+orig. -b _temp_ROI_mask_value+orig. -expr 'a-b' -prefix   _temp_ROI_atlas
+			3dcalc -a ${subj}.${session}.${run}.anat_seg+orig. -expr 'amongst(a,3,114)' -prefix   _temp_ROI_mask
+			3dcalc -a  _temp_ROI_mask+orig. -b ${subj}.${session}.${run}.anat_seg+orig. -expr 'a*b' -prefix   _temp_ROI_mask_value
+			3dcalc -a  ${subj}.${session}.${run}.anat_seg_ed8+orig. -b _temp_ROI_mask_value+orig. -expr 'a-b' -prefix   _temp_ROI_atlas
 			3dcalc -a _temp_ROI_mask+orig. -expr 'a*3' -prefix   _temp_ROI_mask_collapse_value
-			3dcalc -a  _temp_ROI_atlas+orig. -b _temp_ROI_mask_collapse_value+orig. -expr 'a+b' -prefix   ${subj}${session}.${run}_anat_seg_ed9
+			3dcalc -a  _temp_ROI_atlas+orig. -b _temp_ROI_mask_collapse_value+orig. -expr 'a+b' -prefix   ${subj}.${session}.${run}.anat_seg_ed9
 
 			rm _temp*
 
 			#--------------------------------collapse LGN-------------------
-			3dcalc -a ${subj}${session}.${run}_anat_seg+orig. -expr 'amongst(a,200,201)' -prefix   _temp_ROI_mask
-			3dcalc -a  _temp_ROI_mask+orig. -b ${subj}${session}.${run}_anat_seg+orig. -expr 'a*b' -prefix   _temp_ROI_mask_value
-			3dcalc -a  ${subj}${session}.${run}_anat_seg_ed9+orig. -b _temp_ROI_mask_value+orig. -expr 'a-b' -prefix   _temp_ROI_atlas
+			3dcalc -a ${subj}.${session}.${run}.anat_seg+orig. -expr 'amongst(a,200,201)' -prefix   _temp_ROI_mask
+			3dcalc -a  _temp_ROI_mask+orig. -b ${subj}.${session}.${run}.anat_seg+orig. -expr 'a*b' -prefix   _temp_ROI_mask_value
+			3dcalc -a  ${subj}.${session}.${run}.anat_seg_ed9+orig. -b _temp_ROI_mask_value+orig. -expr 'a-b' -prefix   _temp_ROI_atlas
 			3dcalc -a _temp_ROI_mask+orig. -expr 'a*200' -prefix   _temp_ROI_mask_collapse_value
-			3dcalc -a  _temp_ROI_atlas+orig. -b _temp_ROI_mask_collapse_value+orig. -expr 'a+b' -prefix   ${subj}${session}.${run}_anat_seg_ed10
+			3dcalc -a  _temp_ROI_atlas+orig. -b _temp_ROI_mask_collapse_value+orig. -expr 'a+b' -prefix   ${subj}.${session}.${run}.anat_seg_ed10
 
 			rm _temp*
 
 
 			#--------------------------------collapse MGB-------------------
-			#3dcalc -a ${subj}${session}.${run}_anat_seg+orig. -expr 'amongst(a,213,114,216,212)' -prefix   _temp_ROI_mask
-			#3dcalc -a  _temp_ROI_mask+orig. -b ${subj}${session}.${run}_anat_seg+orig. -expr 'a*b' -prefix   _temp_ROI_mask_value
-			#3dcalc -a  ${subj}${session}.${run}_anat_seg_ed10+orig. -b _temp_ROI_mask_value+orig. -expr 'a-b' -prefix   _temp_ROI_atlas
+			#3dcalc -a ${subj}.${session}.${run}.anat_seg+orig. -expr 'amongst(a,213,114,216,212)' -prefix   _temp_ROI_mask
+			#3dcalc -a  _temp_ROI_mask+orig. -b ${subj}.${session}.${run}.anat_seg+orig. -expr 'a*b' -prefix   _temp_ROI_mask_value
+			#3dcalc -a  ${subj}.${session}.${run}.anat_seg_ed10+orig. -b _temp_ROI_mask_value+orig. -expr 'a-b' -prefix   _temp_ROI_atlas
 			#3dcalc -a _temp_ROI_mask+orig. -expr 'a*200' -prefix   _temp_ROI_mask_collapse_value
-			#3dcalc -a  _temp_ROI_atlas+orig. -b _temp_ROI_mask_collapse_value+orig. -expr 'a+b' -prefix   ${subj}${session}.${run}_anat_seg_ed11
+			#3dcalc -a  _temp_ROI_atlas+orig. -b _temp_ROI_mask_collapse_value+orig. -expr 'a+b' -prefix   ${subj}.${session}.${run}.anat_seg_ed11
 
 			#rm _temp*
 
 			#--------------------------------collapse some ROIs prefrontal area 24-------------------
-			3dcalc -a ${subj}${session}.${run}_anat_right_seg+orig. -expr 'amongst(a,11,186,185,49,187,98)' -prefix   _temp_ROI_mask
-			3dcalc -a  _temp_ROI_mask+orig. -b ${subj}${session}.${run}_anat_right_seg+orig. -expr 'a*b' -prefix   _temp_ROI_mask_value
-			3dcalc -a  ${subj}${session}.${run}_anat_right_seg+orig. -b _temp_ROI_mask_value+orig. -expr 'a-b' -prefix   _temp_ROI_atlas
+			3dcalc -a ${subj}.${session}.${run}.anat_right_seg+orig. -expr 'amongst(a,11,186,185,49,187,98)' -prefix   _temp_ROI_mask
+			3dcalc -a  _temp_ROI_mask+orig. -b ${subj}.${session}.${run}.anat_right_seg+orig. -expr 'a*b' -prefix   _temp_ROI_mask_value
+			3dcalc -a  ${subj}.${session}.${run}.anat_right_seg+orig. -b _temp_ROI_mask_value+orig. -expr 'a-b' -prefix   _temp_ROI_atlas
 			3dcalc -a _temp_ROI_mask+orig. -expr 'a*11' -prefix   _temp_ROI_mask_collapse_value
-			3dcalc -a  _temp_ROI_atlas+orig. -b _temp_ROI_mask_collapse_value+orig. -expr 'a+b' -prefix   ${subj}${session}.${run}_anat_right_seg_ed1
+			3dcalc -a  _temp_ROI_atlas+orig. -b _temp_ROI_mask_collapse_value+orig. -expr 'a+b' -prefix   ${subj}.${session}.${run}.anat_right_seg_ed1
 
 			rm _temp*
 
 			#--------------------------------collapse some V2-------------------
-			3dcalc -a ${subj}${session}.${run}_anat_right_seg+orig. -expr 'amongst(a,131,172,174)' -prefix   _temp_ROI_mask
-			3dcalc -a  _temp_ROI_mask+orig. -b ${subj}${session}.${run}_anat_right_seg+orig. -expr 'a*b' -prefix   _temp_ROI_mask_value
-			3dcalc -a  ${subj}${session}.${run}_anat_right_seg_ed1+orig. -b _temp_ROI_mask_value+orig. -expr 'a-b' -prefix   _temp_ROI_atlas
+			3dcalc -a ${subj}.${session}.${run}.anat_right_seg+orig. -expr 'amongst(a,131,172,174)' -prefix   _temp_ROI_mask
+			3dcalc -a  _temp_ROI_mask+orig. -b ${subj}.${session}.${run}.anat_right_seg+orig. -expr 'a*b' -prefix   _temp_ROI_mask_value
+			3dcalc -a  ${subj}.${session}.${run}.anat_right_seg_ed1+orig. -b _temp_ROI_mask_value+orig. -expr 'a-b' -prefix   _temp_ROI_atlas
 			3dcalc -a _temp_ROI_mask+orig. -expr 'a*131' -prefix   _temp_ROI_mask_collapse_value
-			3dcalc -a _temp_ROI_atlas+orig. -b _temp_ROI_mask_collapse_value+orig. -expr 'a+b' -prefix   ${subj}${session}.${run}_anat_right_seg_ed2
+			3dcalc -a _temp_ROI_atlas+orig. -b _temp_ROI_mask_collapse_value+orig. -expr 'a+b' -prefix   ${subj}.${session}.${run}.anat_right_seg_ed2
 
 			rm _temp*
 
 			#--------------------------------collapse some V3-------------------
-			3dcalc -a ${subj}${session}.${run}_anat_right_seg+orig. -expr 'amongst(a,123,60)' -prefix   _temp_ROI_mask
-			3dcalc -a  _temp_ROI_mask+orig. -b ${subj}${session}.${run}_anat_right_seg+orig. -expr 'a*b' -prefix   _temp_ROI_mask_value
-			3dcalc -a  ${subj}${session}.${run}_anat_right_seg_ed2+orig. -b _temp_ROI_mask_value+orig. -expr 'a-b' -prefix   _temp_ROI_atlas
+			3dcalc -a ${subj}.${session}.${run}.anat_right_seg+orig. -expr 'amongst(a,123,60)' -prefix   _temp_ROI_mask
+			3dcalc -a  _temp_ROI_mask+orig. -b ${subj}.${session}.${run}.anat_right_seg+orig. -expr 'a*b' -prefix   _temp_ROI_mask_value
+			3dcalc -a  ${subj}.${session}.${run}.anat_right_seg_ed2+orig. -b _temp_ROI_mask_value+orig. -expr 'a-b' -prefix   _temp_ROI_atlas
 			3dcalc -a _temp_ROI_mask+orig. -expr 'a*123' -prefix   _temp_ROI_mask_collapse_value
-			3dcalc -a  _temp_ROI_atlas+orig. -b _temp_ROI_mask_collapse_value+orig. -expr 'a+b' -prefix   ${subj}${session}.${run}_anat_right_seg_ed3
+			3dcalc -a  _temp_ROI_atlas+orig. -b _temp_ROI_mask_collapse_value+orig. -expr 'a+b' -prefix   ${subj}.${session}.${run}.anat_right_seg_ed3
 
 			rm _temp*
 
 			#--------------------------------collapse some V4-------------------
-			3dcalc -a ${subj}${session}.${run}_anat_right_seg+orig. -expr 'amongst(a,20,39)' -prefix   _temp_ROI_mask
-			3dcalc -a  _temp_ROI_mask+orig. -b ${subj}${session}.${run}_anat_right_seg+orig. -expr 'a*b' -prefix   _temp_ROI_mask_value
-			3dcalc -a  ${subj}${session}.${run}_anat_right_seg_ed3+orig. -b _temp_ROI_mask_value+orig. -expr 'a-b' -prefix   _temp_ROI_atlas
+			3dcalc -a ${subj}.${session}.${run}.anat_right_seg+orig. -expr 'amongst(a,20,39)' -prefix   _temp_ROI_mask
+			3dcalc -a  _temp_ROI_mask+orig. -b ${subj}.${session}.${run}.anat_right_seg+orig. -expr 'a*b' -prefix   _temp_ROI_mask_value
+			3dcalc -a  ${subj}.${session}.${run}.anat_right_seg_ed3+orig. -b _temp_ROI_mask_value+orig. -expr 'a-b' -prefix   _temp_ROI_atlas
 			3dcalc -a _temp_ROI_mask+orig. -expr 'a*20' -prefix   _temp_ROI_mask_collapse_value
-			3dcalc -a  _temp_ROI_atlas+orig. -b _temp_ROI_mask_collapse_value+orig. -expr 'a+b' -prefix   ${subj}${session}.${run}_anat_right_seg_ed4
+			3dcalc -a  _temp_ROI_atlas+orig. -b _temp_ROI_mask_collapse_value+orig. -expr 'a+b' -prefix   ${subj}.${session}.${run}.anat_right_seg_ed4
 
 			rm _temp*
 
 			#--------------------------------collapse some V6-------------------
-			3dcalc -a ${subj}${session}.${run}_anat_right_seg+orig. -expr 'amongst(a,73,141,56)' -prefix   _temp_ROI_mask
-			3dcalc -a  _temp_ROI_mask+orig. -b ${subj}${session}.${run}_anat_right_seg+orig. -expr 'a*b' -prefix   _temp_ROI_mask_value
-			3dcalc -a  ${subj}${session}.${run}_anat_right_seg_ed4+orig. -b _temp_ROI_mask_value+orig. -expr 'a-b' -prefix   _temp_ROI_atlas
+			3dcalc -a ${subj}.${session}.${run}.anat_right_seg+orig. -expr 'amongst(a,73,141,56)' -prefix   _temp_ROI_mask
+			3dcalc -a  _temp_ROI_mask+orig. -b ${subj}.${session}.${run}.anat_right_seg+orig. -expr 'a*b' -prefix   _temp_ROI_mask_value
+			3dcalc -a  ${subj}.${session}.${run}.anat_right_seg_ed4+orig. -b _temp_ROI_mask_value+orig. -expr 'a-b' -prefix   _temp_ROI_atlas
 			3dcalc -a _temp_ROI_mask+orig. -expr 'a*73' -prefix   _temp_ROI_mask_collapse_value
-			3dcalc -a  _temp_ROI_atlas+orig. -b _temp_ROI_mask_collapse_value+orig. -expr 'a+b' -prefix   ${subj}${session}.${run}_anat_right_seg_ed5
+			3dcalc -a  _temp_ROI_atlas+orig. -b _temp_ROI_mask_collapse_value+orig. -expr 'a+b' -prefix   ${subj}.${session}.${run}.anat_right_seg_ed5
 
 			rm _temp*
 
 			#--------------------------------collapse prefrontal area23-------------------
-			3dcalc -a ${subj}${session}.${run}_anat_right_seg+orig. -expr 'amongst(a,27,64,85)' -prefix   _temp_ROI_mask
-			3dcalc -a  _temp_ROI_mask+orig. -b ${subj}${session}.${run}_anat_right_seg+orig. -expr 'a*b' -prefix   _temp_ROI_mask_value
-			3dcalc -a  ${subj}${session}.${run}_anat_right_seg_ed5+orig. -b _temp_ROI_mask_value+orig. -expr 'a-b' -prefix   _temp_ROI_atlas
+			3dcalc -a ${subj}.${session}.${run}.anat_right_seg+orig. -expr 'amongst(a,27,64,85)' -prefix   _temp_ROI_mask
+			3dcalc -a  _temp_ROI_mask+orig. -b ${subj}.${session}.${run}.anat_right_seg+orig. -expr 'a*b' -prefix   _temp_ROI_mask_value
+			3dcalc -a  ${subj}.${session}.${run}.anat_right_seg_ed5+orig. -b _temp_ROI_mask_value+orig. -expr 'a-b' -prefix   _temp_ROI_atlas
 			3dcalc -a _temp_ROI_mask+orig. -expr 'a*27' -prefix   _temp_ROI_mask_collapse_value
-			3dcalc -a  _temp_ROI_atlas+orig. -b _temp_ROI_mask_collapse_value+orig. -expr 'a+b' -prefix   ${subj}${session}.${run}_anat_right_seg_ed6
+			3dcalc -a  _temp_ROI_atlas+orig. -b _temp_ROI_mask_collapse_value+orig. -expr 'a+b' -prefix   ${subj}.${session}.${run}.anat_right_seg_ed6
 
 			rm _temp*
 
 			#--------------------------------collapse prefrontal area13-------------------
-			3dcalc -a ${subj}${session}.${run}_anat_right_seg+orig. -expr 'amongst(a,69,8,18,65)' -prefix   _temp_ROI_mask
-			3dcalc -a  _temp_ROI_mask+orig. -b ${subj}${session}.${run}_anat_right_seg+orig. -expr 'a*b' -prefix   _temp_ROI_mask_value
-			3dcalc -a  ${subj}${session}.${run}_anat_right_seg_ed6+orig. -b _temp_ROI_mask_value+orig. -expr 'a-b' -prefix  _temp_ROI_atlas
+			3dcalc -a ${subj}.${session}.${run}.anat_right_seg+orig. -expr 'amongst(a,69,8,18,65)' -prefix   _temp_ROI_mask
+			3dcalc -a  _temp_ROI_mask+orig. -b ${subj}.${session}.${run}.anat_right_seg+orig. -expr 'a*b' -prefix   _temp_ROI_mask_value
+			3dcalc -a  ${subj}.${session}.${run}.anat_right_seg_ed6+orig. -b _temp_ROI_mask_value+orig. -expr 'a-b' -prefix  _temp_ROI_atlas
 			3dcalc -a _temp_ROI_mask+orig. -expr 'a*69' -prefix   _temp_ROI_mask_collapse_value
-			3dcalc -a  _temp_ROI_atlas+orig. -b _temp_ROI_mask_collapse_value+orig. -expr 'a+b' -prefix   ${subj}${session}.${run}_anat_right_seg_ed7
+			3dcalc -a  _temp_ROI_atlas+orig. -b _temp_ROI_mask_collapse_value+orig. -expr 'a+b' -prefix   ${subj}.${session}.${run}.anat_right_seg_ed7
 
 			rm _temp*
 
 			#--------------------------------collapse prefrontal area12-------------------
-			3dcalc -a ${subj}${session}.${run}_anat_right_seg+orig. -expr 'amongst(a,133,55,150,107)' -prefix   _temp_ROI_mask
-			3dcalc -a  _temp_ROI_mask+orig. -b ${subj}${session}.${run}_anat_right_seg+orig. -expr 'a*b' -prefix   _temp_ROI_mask_value
-			3dcalc -a  ${subj}${session}.${run}_anat_right_seg_ed7+orig. -b _temp_ROI_mask_value+orig. -expr 'a-b' -prefix   _temp_ROI_atlas
+			3dcalc -a ${subj}.${session}.${run}.anat_right_seg+orig. -expr 'amongst(a,133,55,150,107)' -prefix   _temp_ROI_mask
+			3dcalc -a  _temp_ROI_mask+orig. -b ${subj}.${session}.${run}.anat_right_seg+orig. -expr 'a*b' -prefix   _temp_ROI_mask_value
+			3dcalc -a  ${subj}.${session}.${run}.anat_right_seg_ed7+orig. -b _temp_ROI_mask_value+orig. -expr 'a-b' -prefix   _temp_ROI_atlas
 			3dcalc -a _temp_ROI_mask+orig. -expr 'a*133' -prefix   _temp_ROI_mask_collapse_value
-			3dcalc -a  _temp_ROI_atlas+orig. -b _temp_ROI_mask_collapse_value+orig. -expr 'a+b' -prefix   ${subj}${session}.${run}_anat_right_seg_ed8
+			3dcalc -a  _temp_ROI_atlas+orig. -b _temp_ROI_mask_collapse_value+orig. -expr 'a+b' -prefix   ${subj}.${session}.${run}.anat_right_seg_ed8
 
 			rm _temp*
 
 			#--------------------------------collapse prefrontal area11-------------------
-			3dcalc -a ${subj}${session}.${run}_anat_right_seg+orig. -expr 'amongst(a,3,114)' -prefix   _temp_ROI_mask
-			3dcalc -a  _temp_ROI_mask+orig. -b ${subj}${session}.${run}_anat_right_seg+orig. -expr 'a*b' -prefix   _temp_ROI_mask_value
-			3dcalc -a  ${subj}${session}.${run}_anat_right_seg_ed8+orig. -b _temp_ROI_mask_value+orig. -expr 'a-b' -prefix   _temp_ROI_atlas
+			3dcalc -a ${subj}.${session}.${run}.anat_right_seg+orig. -expr 'amongst(a,3,114)' -prefix   _temp_ROI_mask
+			3dcalc -a  _temp_ROI_mask+orig. -b ${subj}.${session}.${run}.anat_right_seg+orig. -expr 'a*b' -prefix   _temp_ROI_mask_value
+			3dcalc -a  ${subj}.${session}.${run}.anat_right_seg_ed8+orig. -b _temp_ROI_mask_value+orig. -expr 'a-b' -prefix   _temp_ROI_atlas
 			3dcalc -a _temp_ROI_mask+orig. -expr 'a*3' -prefix   _temp_ROI_mask_collapse_value
-			3dcalc -a  _temp_ROI_atlas+orig. -b _temp_ROI_mask_collapse_value+orig. -expr 'a+b' -prefix   ${subj}${session}.${run}_anat_right_seg_ed9
+			3dcalc -a  _temp_ROI_atlas+orig. -b _temp_ROI_mask_collapse_value+orig. -expr 'a+b' -prefix   ${subj}.${session}.${run}.anat_right_seg_ed9
 
 			rm _temp*
 
 			#--------------------------------collapse LGN-------------------
-			3dcalc -a ${subj}${session}.${run}_anat_right_seg+orig. -expr 'amongst(a,200,201)' -prefix   _temp_ROI_mask
-			3dcalc -a  _temp_ROI_mask+orig. -b ${subj}${session}.${run}_anat_right_seg+orig. -expr 'a*b' -prefix   _temp_ROI_mask_value
-			3dcalc -a  ${subj}${session}.${run}_anat_right_seg_ed9+orig. -b _temp_ROI_mask_value+orig. -expr 'a-b' -prefix   _temp_ROI_atlas
+			3dcalc -a ${subj}.${session}.${run}.anat_right_seg+orig. -expr 'amongst(a,200,201)' -prefix   _temp_ROI_mask
+			3dcalc -a  _temp_ROI_mask+orig. -b ${subj}.${session}.${run}.anat_right_seg+orig. -expr 'a*b' -prefix   _temp_ROI_mask_value
+			3dcalc -a  ${subj}.${session}.${run}.anat_right_seg_ed9+orig. -b _temp_ROI_mask_value+orig. -expr 'a-b' -prefix   _temp_ROI_atlas
 			3dcalc -a _temp_ROI_mask+orig. -expr 'a*200' -prefix   _temp_ROI_mask_collapse_value
-			3dcalc -a  _temp_ROI_atlas+orig. -b _temp_ROI_mask_collapse_value+orig. -expr 'a+b' -prefix   ${subj}${session}.${run}_anat_right_seg_ed10
+			3dcalc -a  _temp_ROI_atlas+orig. -b _temp_ROI_mask_collapse_value+orig. -expr 'a+b' -prefix   ${subj}.${session}.${run}.anat_right_seg_ed10
 
 			rm _temp*
 
 
 			#--------------------------------collapse MGB-------------------
-			#3dcalc -a ${subj}${session}.${run}_anat_right_seg+orig. -expr 'amongst(a,213,114,216,212)' -prefix   _temp_ROI_mask
-			#3dcalc -a  _temp_ROI_mask+orig. -b ${subj}${session}.${run}_anat_right_seg+orig. -expr 'a*b' -prefix   _temp_ROI_mask_value
-			#3dcalc -a  ${subj}${session}.${run}_anat_right_seg_ed10+orig. -b _temp_ROI_mask_value+orig. -expr 'a-b' -prefix   _temp_ROI_atlas
+			#3dcalc -a ${subj}.${session}.${run}.anat_right_seg+orig. -expr 'amongst(a,213,114,216,212)' -prefix   _temp_ROI_mask
+			#3dcalc -a  _temp_ROI_mask+orig. -b ${subj}.${session}.${run}.anat_right_seg+orig. -expr 'a*b' -prefix   _temp_ROI_mask_value
+			#3dcalc -a  ${subj}.${session}.${run}.anat_right_seg_ed10+orig. -b _temp_ROI_mask_value+orig. -expr 'a-b' -prefix   _temp_ROI_atlas
 			#3dcalc -a _temp_ROI_mask+orig. -expr 'a*200' -prefix   _temp_ROI_mask_collapse_value
-			#3dcalc -a  _temp_ROI_atlas+orig. -b _temp_ROI_mask_collapse_value+orig. -expr 'a+b' -prefix   ${subj}${session}.${run}_anat_right_seg_ed11
+			#3dcalc -a  _temp_ROI_atlas+orig. -b _temp_ROI_mask_collapse_value+orig. -expr 'a+b' -prefix   ${subj}.${session}.${run}.anat_right_seg_ed11
 
 			#rm _temp*
 
-			3dcalc -a ${subj}${session}.${run}_anat_seg_ed10+orig.  -b ${subj}${session}.${run}_anat_right_seg_ed10+orig \
-			-expr 'a-b' -prefix ${subj}${session}.${run}_anat_left_seg_ed10
+			3dcalc -a ${subj}.${session}.${run}.anat_seg_ed10+orig.  -b ${subj}.${session}.${run}.anat_right_seg_ed10+orig \
+			-expr 'a-b' -prefix ${subj}.${session}.${run}.anat_left_seg_ed10
 
 			mkdir left_ROIs
 			mkdir right_ROIs
 
-			3dcopy ${subj}${session}.${run}_anat_right_seg_ed10+orig  ./right_ROIs/RH_ROIs.nii
-			3dcopy ${subj}${session}.${run}_anat_right_seg_ed10+orig  ./RH_ROIs.nii
-			3dcopy ${subj}${session}.${run}_anat_left_seg_ed10+orig  ./left_ROIs/LH_ROIs.nii
-			3dcopy ${subj}${session}.${run}_anat_left_seg_ed10+orig  ./LH_ROIs.nii
+			3dcopy ${subj}.${session}.${run}.anat_right_seg_ed10+orig  ./right_ROIs/RH_ROIs.nii
+			3dcopy ${subj}.${session}.${run}.anat_right_seg_ed10+orig  ./RH_ROIs.nii
+			3dcopy ${subj}.${session}.${run}.anat_left_seg_ed10+orig  ./left_ROIs/LH_ROIs.nii
+			3dcopy ${subj}.${session}.${run}.anat_left_seg_ed10+orig  ./LH_ROIs.nii
 
-			 rm ${subj}${session}.${run}_anat_left_seg_ed*+orig*
-			 rm ${subj}${session}.${run}_anat_right_seg_ed*+orig*
-			 rm ${subj}${session}.${run}_anat_seg_ed*+orig*
+			 rm ${subj}.${session}.${run}.anat_left_seg_ed*+orig*
+			 rm ${subj}.${session}.${run}.anat_right_seg_ed*+orig*
+			 rm ${subj}.${session}.${run}.anat_seg_ed*+orig*
 
 			./relabel
 
@@ -245,9 +248,28 @@ AL.S1.R1.anat_right_seg+orig.
 			3dMean -short -non_zero -prefix ALL_ROIs.RH.nii right_ROIs/ROI_*.RH.nii
 			3dMean -short -non_zero -prefix ALL_ROIs.Both.nii ALL_ROIs.RH.nii ALL_ROIs.LH.nii
 
+			#*******************Get Warpped ROIs************************
 
+			3dresample \
+			-master ../../../../EPI2/${subj}/${session}/mask/output/${subj}.${session}.all.epi.TZ.VR.SM.U.NS.ZP_shft.AL.nii \
+			-prefix __tmp_D99_in_${subj}.${session}.R1.anat.NS.New.AL_native_RS.nii \
+			-inset ../D99_in_${subj}.${session}.R1.anat.NS.New.AL_native.nii
+			
+			3dQwarp -source __tmp_D99_in_${subj}.${session}.R1.anat.NS.New.AL_native_RS.nii \
+			-base ../../../../EPI2/${subj}/${session}/mask/output/${subj}.${session}.all.epi.TZ.VR.SM.U.NS.ZP_shft.AL.nii \
+			-prefix __tmp_D99_in_${subj}.${session}.R1.anat.NS.New.AL_native_RS.QW_2_EPI.nii -iwarp -mi -Qfinal -verb -blur 0 1
+
+			#3dNwarpApply -nwarp __tmp_D99_in_${subj}.${session}.R1.anat.NS.New.AL_native_RS.QW_2_EPI_WARP.nii \
+ 			#-source ../${subj}.${session}.${run}.anat.NS.New.AL_seg.nii \
+ 			#-ainterp NN -master NWARP -prefix ${subj}.${session}.${run}.anat.NS.New.AL_seg.Q.nii
+
+ 			3dNwarpApply -nwarp __tmp_D99_in_${subj}.${session}.R1.anat.NS.New.AL_native_RS.QW_2_EPI_WARP.nii \
+ 			-source ALL_ROIs.Both.nii \
+ 			-ainterp NN -master NWARP -prefix ../../../../EPI2/${subj}/${session}/mask/output/ALL_ROIs.Both.Q.nii
+
+ 			rm __tmp*
 		   end
-		cd ../
+		cd ../../
 	       end
 	   cd ../
          end
